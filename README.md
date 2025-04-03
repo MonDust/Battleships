@@ -1,8 +1,13 @@
-### Java Spring template project
+### Battleships
 
-This project is based on a GitLab [Project Template](https://docs.gitlab.com/ee/gitlab-basics/create-project.html).
+Project implementing battleships in Java with Swing used for graphics.
 
-Improvements can be proposed in the [original project](https://gitlab.com/gitlab-org/project-templates/spring).
+# Current development
+- Graphical interface
+- Game mechanics
+
+# Future development
+- Online connection
 
 ### CI/CD with Auto DevOps
 
