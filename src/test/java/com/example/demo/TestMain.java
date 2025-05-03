@@ -1,14 +1,15 @@
 package com.example.demo;
 
-import entities.Board;
-import entities.Player;
-import entities.Ship;
+import pg.edu.pl.entities.Board;
+import pg.edu.pl.entities.Player;
+import pg.edu.pl.entities.Ship;
+import pg.edu.pl.utils.Player_choice;
 
 public class TestMain {
     public static void main(String[] args) {
         // Create two players
-        Player p1 = new Player(1);
-        Player p2 = new Player(2);
+        Player p1 = new Player(Player_choice.PLAYER_ONE);
+        Player p2 = new Player(Player_choice.PLAYER_TWO);
 
         System.out.println("=== PLACING SHIPS ===");
         // Player 1: place a Destroyer of length 2 horizontally at (0,0)

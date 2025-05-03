@@ -1,19 +1,26 @@
-package entities;
+package pg.edu.pl.entities;
+
+import pg.edu.pl.utils.Player_choice;
 
 public class Player {
-    private int id;
-    private Board board;
+    private final Player_choice id;
+    private final Board board;
 
     /**
      * Creates a player with a certain id and a new board for the player.
      * @param id id of the player
      */
-    public Player(int id) {
+    public Player(Player_choice id) {
         this.id=id;
         this.board=new Board();
     }
 
-    public int getId() {
+    public Player(Player_choice id, Board board) {
+        this.id=id;
+        this.board=board;
+    }
+
+    public Player_choice getPlayerID() {
         return id;
     }
 
