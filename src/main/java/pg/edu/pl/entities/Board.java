@@ -1,26 +1,51 @@
-package entities;
+package pg.edu.pl.entities;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static pg.edu.pl.utils.Constants.DEFAULT_BOARD_SIZE;
+
 public class Board {
-    private final int size = 8;
-    private Field[][] fields = new Field[size][size];
-    private List<Ship> ships = new ArrayList<>();
+    private final int width, height;
+    private final Field[][] fields;
+    private final List<Ship> ships = new ArrayList<>();
 
     /**
      * Initialize board and create empty fields.
      */
     public Board() {
-        for (int x = 0; x < size; x++) {
-            for (int y = 0; y < size; y++) {
+        width = DEFAULT_BOARD_SIZE;
+        height = DEFAULT_BOARD_SIZE;
+        fields = new Field[width][height];
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
                 fields[x][y] = new Field(x, y);
             }
         }
     }
 
-    public int getSize() {
-        return size;
+    /**
+     * Initialize board and create empty fields.
+     * @param customWidth width
+     * @param customHeight height
+     */
+    public Board(int customWidth, int customHeight) {
+        width = customWidth;
+        height = customHeight;
+        fields = new Field[width][height];
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                fields[x][y] = new Field(x, y);
+            }
+        }
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     /**
@@ -30,7 +55,7 @@ public class Board {
      * @return field at x and y
      */
     public Field getField(int x, int y) {
-        if (x < 0 || x >= size || y < 0 || y >= size) {
+        if (x < 0 || x >= width || y < 0 || y >= height) {
             throw new IndexOutOfBoundsException("Invalid field coordinates");
         }
         return fields[x][y];
@@ -74,7 +99,7 @@ public class Board {
         for (int i = 0; i < ship.getSize(); i++) {
             int newX = horizontal ? x + i : x;
             int newY = horizontal ? y : y + i;
-            if (newX < 0 || newX >= size || newY < 0 || newY >= size) {
+            if (newX < 0 || newX >= width || newY < 0 || newY >= height) {
                 return false;
             }
             Field field = getField(newX, newY);

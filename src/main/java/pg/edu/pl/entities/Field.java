@@ -1,4 +1,4 @@
-package entities;
+package pg.edu.pl.entities;
 
 public class Field {
     private int x;
