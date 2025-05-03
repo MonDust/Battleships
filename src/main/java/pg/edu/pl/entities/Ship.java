@@ -1,10 +1,10 @@
-package entities;
+package pg.edu.pl.entities;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Ship {
-    private int size;
+    private final int size;
     /**
      * Is the ship sunk
      */
