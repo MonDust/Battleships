@@ -1,10 +1,19 @@
 package pg.edu.pl.entities;
 
-import pg.edu.pl.utils.Player_choice;
+import lombok.Getter;
+import lombok.Setter;
 
-public class Player {
+import pg.edu.pl.entities.interfaces.IBoard;
+import pg.edu.pl.entities.interfaces.IPlayer;
+
+import pg.edu.pl.utils.Player_choice;
+import pg.edu.pl.utils.ShotResult;
+
+@Getter
+@Setter
+public class Player implements IPlayer {
     private final Player_choice id;
-    private final Board board;
+    private final IBoard board;
 
     /**
      * Creates a player with a certain id and a new board for the player.
@@ -15,17 +24,9 @@ public class Player {
         this.board=new Board();
     }
 
-    public Player(Player_choice id, Board board) {
+    public Player(Player_choice id, IBoard board) {
         this.id=id;
         this.board=board;
-    }
-
-    public Player_choice getPlayerID() {
-        return id;
-    }
-
-    public Board getBoard() {
-        return board;
     }
 
     /**
@@ -36,7 +37,8 @@ public class Player {
      * HIT - if the shoot hit a ship,
      * MISS - if the field shot at is empty,
      */
-     public Board.ShotResult shoot(int x, int y) {
+     @Override
+     public ShotResult shoot(int x, int y) {
         return board.shoot(x, y);
     }
 }

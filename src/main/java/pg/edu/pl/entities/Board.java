@@ -1,14 +1,32 @@
 package pg.edu.pl.entities;
 
+import lombok.Getter;
+import lombok.Setter;
+import pg.edu.pl.entities.interfaces.IBoard;
+import pg.edu.pl.entities.interfaces.IShip;
+import pg.edu.pl.utils.ShotResult;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import static pg.edu.pl.utils.Constants.DEFAULT_BOARD_SIZE;
 
-public class Board {
+@Setter
+@Getter
+public class Board implements IBoard {
     private final int width, height;
+    /**
+     * -- GETTER --
+     *  Returns all fields on this board.
+     *
+     */
     private final Field[][] fields;
-    private final List<Ship> ships = new ArrayList<>();
+    /**
+     * -- GETTER --
+     *  Returns all ships on this board.
+     *
+     */
+    private final List<IShip> ships = new ArrayList<>();
 
     /**
      * Initialize board and create empty fields.
@@ -40,20 +58,13 @@ public class Board {
         }
     }
 
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
     /**
      * Returns a field at specific coordinates.
      * @param x x coordinate of the field
      * @param y y coordinate of the field
      * @return field at x and y
      */
+    @Override
     public Field getField(int x, int y) {
         if (x < 0 || x >= width || y < 0 || y >= height) {
             throw new IndexOutOfBoundsException("Invalid field coordinates");
@@ -61,30 +72,6 @@ public class Board {
         return fields[x][y];
     }
 
-    /**
-     * Returns all fields on this board.
-     * @return Array of the size of the board (8x8 by default) containing all fields.
-     */
-    public Field[][] getFields() {
-        return fields;
-    }
-
-    /**
-     * Returns all ships on this board.
-     * @return List of all ships
-     */
-    public List<Ship> getShips() {
-        return ships;
-    }
-
-    /**
-     * Possible shot results.
-     */
-    public enum ShotResult {
-        HIT,
-        MISS,
-        ALREADY_REVEALED
-    }
 
     /**
      * Places a ship on the board on specific coordinates.
@@ -94,7 +81,8 @@ public class Board {
      * @param horizontal placement of the ship true if horizontal, false if vertical
      * @return true if placement successful, false otherwise
      */
-    public boolean placeShip(Ship ship, int x, int y, boolean horizontal) {
+    @Override
+    public boolean placeShip(IShip ship, int x, int y, boolean horizontal) {
         List<Field> shipFields = new ArrayList<>();
         for (int i = 0; i < ship.getSize(); i++) {
             int newX = horizontal ? x + i : x;
@@ -114,6 +102,7 @@ public class Board {
         ship.setFields(shipFields);
         ship.setPlaced(true);
         ships.add(ship);
+
         return true;
     }
 
@@ -126,6 +115,7 @@ public class Board {
      * MISS - if the field shot at is empty
      * @throws IndexOutOfBoundsException if coords are out of bounds
      */
+    @Override
     public ShotResult shoot(int x, int y) {
         Field field = getField(x, y);
 
@@ -136,9 +126,8 @@ public class Board {
         field.setRevealed(true);
 
         if (field.getShip() != null) {
-            Ship ship = field.getShip();
+            IShip ship = field.getShip();
             field.setHit(true);
-
 
             boolean allHit = true;
             for (Field shipField : ship.getFields()) {
@@ -163,12 +152,14 @@ public class Board {
      * @return true if all ships have sunk
      * false if at least one ship on the board is not sunk
      */
+    @Override
     public boolean areAllShipsSunk() {
-        for (Ship ship : ships) {
+        for (IShip ship : ships) {
             if (!ship.isSunk()) {
                 return false;
             }
         }
         return true;
     }
+
 }

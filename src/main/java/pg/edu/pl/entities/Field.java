@@ -1,46 +1,20 @@
 package pg.edu.pl.entities;
 
+import lombok.Getter;
+import lombok.Setter;
+import pg.edu.pl.entities.interfaces.IShip;
+
+@Getter
+@Setter
 public class Field {
-    private int x;
-    private int y;
+    private final int x;
+    private final int y;
     private boolean isHit = false;
     private boolean isRevealed = false;
-    private Ship ship = null;
+    private IShip ship = null;
 
     public Field(int x, int y) {
         this.x =x;
         this.y=y;
-    }
-
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public boolean isHit() {
-        return isHit;
-    }
-
-    public boolean isRevealed() {
-        return isRevealed;
-    }
-
-    public Ship getShip() {
-        return ship;
-    }
-
-    public void setHit(boolean hit) {
-        isHit = hit;
-    }
-
-    public void setRevealed(boolean revealed) {
-        isRevealed = revealed;
-    }
-
-    public void setShip(Ship ship) {
-        this.ship = ship;
     }
 }

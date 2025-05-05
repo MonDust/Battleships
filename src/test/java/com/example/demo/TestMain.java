@@ -1,8 +1,8 @@
 package com.example.demo;
 
-import pg.edu.pl.entities.Board;
 import pg.edu.pl.entities.Player;
 import pg.edu.pl.entities.Ship;
+import pg.edu.pl.utils.ShotResult;
 import pg.edu.pl.utils.Player_choice;
 
 public class TestMain {
@@ -29,13 +29,13 @@ public class TestMain {
 
         System.out.println("\n=== SHOOTING ===");
         // Player 1 shoots at Player 2's board
-        Board.ShotResult r1 = p2.shoot(2, 2);
+        ShotResult r1 = p2.shoot(2, 2);
         System.out.println("P1 shoots P2 at (2,2) -> " + r1); // expected HIT
 
-        Board.ShotResult r2 = p2.shoot(2, 3);
+        ShotResult r2 = p2.shoot(2, 3);
         System.out.println("P1 shoots P2 at (2,3) -> " + r2); // expected HIT
 
-        Board.ShotResult r3 = p2.shoot(2, 4);
+        ShotResult r3 = p2.shoot(2, 4);
         System.out.println("P1 shoots P2 at (2,4) -> " + r3); // expected HIT, ship sunk
 
         // Check if all Player 2's ships are sunk
@@ -43,19 +43,19 @@ public class TestMain {
         System.out.println("Are all P2 ships sunk? -> " + p2Dead);
 
         // Player 1 shoots in the water
-        Board.ShotResult r4 = p2.shoot(0, 7);
+        ShotResult r4 = p2.shoot(0, 7);
         System.out.println("P1 shoots P2 at (0,7) -> " + r4); // expected MISS
 
         // Player 1 repeats the shot at the same coordinate
-        Board.ShotResult r5 = p2.shoot(0, 7);
+        ShotResult r5 = p2.shoot(0, 7);
         System.out.println("P1 shoots P2 at (0,7) again -> " + r5); // expected ALREADY_REVEALED
 
         System.out.println("\n=== SINKING P1 ===");
         // Player 2 shoots at Player 1's board to sink the destroyer
-        Board.ShotResult rr1 = p1.shoot(0, 0);
+        ShotResult rr1 = p1.shoot(0, 0);
         System.out.println("P2 shoots P1 at (0,0) -> " + rr1); // expected HIT
 
-        Board.ShotResult rr2 = p1.shoot(1, 0);
+        ShotResult rr2 = p1.shoot(1, 0);
         System.out.println("P2 shoots P1 at (1,0) -> " + rr2); // expected HIT, ship sunk
 
         // Check if all Player 1's ships are sunk

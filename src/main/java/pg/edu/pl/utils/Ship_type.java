@@ -1,8 +1,11 @@
 package pg.edu.pl.utils;
 
+import lombok.Getter;
+
 /**
  * Enum to represent ship types in the Battleships game with their sizes.
  */
+@Getter
 public enum Ship_type {
     CARRIER(5),
     BATTLESHIP(4),
@@ -10,6 +13,10 @@ public enum Ship_type {
     DESTROYER(3),
     SUBMARINE(2);
 
+    /**
+     * -- GETTER --
+     *  Getter method to get the size of the ship
+     */
     private final int size;
 
     /**
@@ -18,14 +25,6 @@ public enum Ship_type {
      */
     Ship_type(int size) {
         this.size = size;
-    }
-
-    /**
-     * Getter method to get the size of the ship
-     * @return int - size
-     */
-    public int getSize() {
-        return size;
     }
 
     /**
