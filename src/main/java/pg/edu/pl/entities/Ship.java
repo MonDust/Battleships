@@ -1,9 +1,15 @@
 package pg.edu.pl.entities;
 
+import lombok.Getter;
+import lombok.Setter;
+import pg.edu.pl.entities.interfaces.IShip;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class Ship {
+@Getter
+@Setter
+public class Ship implements IShip {
     private final int size;
     /**
      * Is the ship sunk
@@ -19,32 +25,24 @@ public class Ship {
         this.size = size;
     }
 
-    public int getSize() {
-        return size;
-    }
-
+    @Override
     public boolean isSunk() {
         return isSunk;
     }
 
+    @Override
     public boolean isPlaced() {
         return isPlaced;
     }
 
-    public List<Field> getFields() {
-        return fields;
-    }
-
+    @Override
     public void setSunk(boolean sunk) {
         isSunk = sunk;
     }
 
+    @Override
     public void setPlaced(boolean placed) {
         isPlaced = placed;
-    }
-
-    public void setFields(List<Field> fields) {
-        this.fields = fields;
     }
 
 
