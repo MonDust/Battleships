@@ -15,7 +15,9 @@ public class GameHandler  implements Runnable {
     private boolean running = true;
 
     public void addPlayer(Socket socket) {
+        System.out.println("Adding player: " + socket);
         boolean added = waitingPlayers.offer(socket);
+        System.out.println("Waiting player added: " + added);
         if (!added) {
             System.err.println("Failed to add player to the waiting queue. Queue might be full.");
             // reject the player

@@ -13,6 +13,7 @@ public class GameServer {
     private boolean running = true;
 
     public void start(String host, int backlog, int port) {
+        System.out.println("Starting game server... ");
         try (ServerSocket serverSocket = new ServerSocket(port, backlog, InetAddress.getByName(host))) {
             System.out.println("Server started on port " + port);
 
@@ -57,7 +58,7 @@ public class GameServer {
                 }
             }
         } catch (IOException e) {
-            System.err.println("Error starting the server: " + e.getMessage());
+            System.err.println("Error starting the server 1: " + e.getMessage());
         }
     }
 
