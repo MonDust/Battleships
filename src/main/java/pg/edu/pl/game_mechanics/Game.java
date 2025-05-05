@@ -7,6 +7,7 @@ import pg.edu.pl.entities.Field;
 import pg.edu.pl.entities.Player;
 import pg.edu.pl.entities.Ship;
 import pg.edu.pl.entities.interfaces.IShip;
+import pg.edu.pl.gui.*;
 import pg.edu.pl.utils.Ship_type;
 import pg.edu.pl.utils.ShotResult;
 import pg.edu.pl.entities.interfaces.IBoard;
@@ -14,6 +15,10 @@ import pg.edu.pl.entities.interfaces.IPlayer;
 import pg.edu.pl.game_mechanics.interfaces.IGame;
 import pg.edu.pl.utils.Player_choice;
 
+import javax.swing.*;
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Deque;
 import java.util.Scanner;
 
 import static pg.edu.pl.utils.Constants.*;
@@ -30,6 +35,9 @@ public class Game implements IGame {
     private Player_choice currentPlayer;
 
     private boolean playerHasWon = false ;
+
+    private GamePanel gamePanel;
+    private Deque<Ship_type> shipsToPlace = new ArrayDeque<>();
 
     public Game() {
         this.widthOfTheBoard = DEFAULT_BOARD_SIZE;
@@ -59,6 +67,52 @@ public class Game implements IGame {
 
         currentPlayer = Player_choice.PLAYER_ONE;
     }
+
+    public void startPlacingSequence() {
+        shipsToPlace.clear();
+        shipsToPlace.addAll(Arrays.asList(Ship_type.values()));
+        placeNextShip();
+    }
+
+
+    private void placeNextShip() {
+        BoardPanel pb = gamePanel.getPlayerBoard();
+        if (shipsToPlace.isEmpty()) {
+            registerShootListeners();
+        } else {
+            Ship_type next = shipsToPlace.poll();
+            pb.startPlacingShip(next, pb.isHorizontal());
+        }
+    }
+
+    public void onShipPlaced() {
+        gamePanel.getPlayerBoard().refreshView();
+        placeNextShip();
+    }
+
+    private void registerShootListeners() {
+    BoardPanel op = gamePanel.getOpponentBoard();
+    FieldButton[][] grid = op.getButtonGrid();
+    for (int r = 0; r < widthOfTheBoard; r++) {
+        for (int c = 0; c < heightOfTheBoard; c++) {
+            final int row = r;
+            final int col = c;
+            FieldButton btn = grid[row][col];
+            btn.addActionListener(e -> {
+                boolean valid = doTurn(row, col);
+                gamePanel.getPlayerBoard().refreshView();
+                gamePanel.getOpponentBoard().refreshView();
+                if (!valid) {
+                    JOptionPane.showMessageDialog(null, "Field already revealed");
+                }
+                if (playerHasWon) {
+                    JOptionPane.showMessageDialog(
+                      null, currentPlayer.getPlayerName() + " wins!");
+                }
+            });
+        }
+    }
+}
 
     @Override
     public void restart() {

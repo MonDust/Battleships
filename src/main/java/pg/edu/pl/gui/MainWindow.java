@@ -1,9 +1,16 @@
 package pg.edu.pl.gui;
 
+import pg.edu.pl.game_mechanics.Game;
+import pg.edu.pl.utils.Ship_type;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class MainWindow extends JFrame {
+    private final Game game;
+    private final GamePanel gamePanel;
+
+
     public MainWindow() {
         setTitle("Battleship Game");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -34,14 +41,38 @@ public class MainWindow extends JFrame {
         topPanel.add(optionsButton);
         topPanel.add(exitButton);
 
-        //Game Panel
-        JPanel gamePanel = new JPanel();
-        gamePanel.setBackground(Color.LIGHT_GRAY);
-        gamePanel.setPreferredSize(new Dimension(800, 600));
+
 
 
         add(topPanel, BorderLayout.NORTH);
+
+        game = new Game();
+        gamePanel = new GamePanel(
+                game.getPlayer_1().getBoard(),
+                game.getPlayer_2().getBoard(),
+                game
+        );
         add(gamePanel, BorderLayout.CENTER);
+        game.setGamePanel(gamePanel);
+        pack();
+
+
+        JPanel controls = new JPanel();
+        JButton rotateButton = new JButton("Orientation: V");
+        rotateButton.addActionListener(e -> {
+            BoardPanel pb = gamePanel.getPlayerBoard();
+            pb.toggleOrientation();
+            rotateButton.setText("Orientation: " + (pb.isHorizontal() ? "V" : "H"));
+        });
+        controls.add(rotateButton);
+
+        add(controls, BorderLayout.SOUTH);
+
+        setVisible(true);
+
+
+        game.startPlacingSequence();
+
 
         setVisible(true);
     }
