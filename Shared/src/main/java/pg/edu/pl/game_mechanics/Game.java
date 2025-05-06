@@ -29,6 +29,9 @@ public class Game implements IGame {
 
     private Player_choice currentPlayer;
 
+    private boolean isPlayer_1Ready = false;
+    private boolean isPlayer_2Ready = false;
+
     private boolean playerHasWon = false ;
 
     public Game() {
@@ -65,11 +68,17 @@ public class Game implements IGame {
         initializeGame();
     }
 
-    private void switchPlayer() {
+    public void switchPlayer() {
         if(currentPlayer == Player_choice.PLAYER_ONE) {
             currentPlayer = Player_choice.PLAYER_TWO;
         } else {
             currentPlayer = Player_choice.PLAYER_ONE;
+        }
+    }
+
+    public synchronized void waitForBothPlayersReady() throws InterruptedException {
+        while (!(getPlayerReady(Player_choice.PLAYER_ONE) && getPlayerReady(Player_choice.PLAYER_TWO))) {
+            wait();
         }
     }
 
@@ -85,6 +94,31 @@ public class Game implements IGame {
             return player_1.getBoard();
         }
         return player_2.getBoard();
+    }
+
+    public void setPlayerReady(Player_choice player_choice) {
+        if(player_choice == Player_choice.PLAYER_ONE) {
+            setPlayer_1Ready(true);
+        }
+        else if(player_choice == Player_choice.PLAYER_TWO) {
+            setPlayer_2Ready(true);
+        }
+    }
+
+    public void setPlayerNOTReady(Player_choice player_choice) {
+        if(player_choice == Player_choice.PLAYER_ONE) {
+            setPlayer_1Ready(false);
+        }
+        else if(player_choice == Player_choice.PLAYER_TWO) {
+            setPlayer_2Ready(false);
+        }
+    }
+
+    public boolean getPlayerReady(Player_choice player_choice) {
+        if(player_choice == Player_choice.PLAYER_ONE) {
+            return isPlayer_1Ready;
+        }
+        return isPlayer_2Ready;
     }
 
     @Override
@@ -109,7 +143,6 @@ public class Game implements IGame {
         // Invalid turn - ALREADY REVEALED
         return false;
     }
-
 
     // Implemented in CLI way:
     // TODO - GUI
@@ -215,37 +248,37 @@ public class Game implements IGame {
         }
     }
 
-    // TODO - GUI
-    public void placeShipsOnBoard(int x, int y, boolean horizontal) {
-        System.out.printf("%s, placing ships on the board.%n", currentPlayer.getPlayerName());
-
-        IBoard currentPlayerBoard = getCurrentPlayerBoard();
-
-        for (Ship_type type : Ship_type.values()) {
-            boolean placed = false;
-
-            while (!placed) {
-                System.out.printf("Placing %s (size %d).%n", type.name(), type.getSize());
-                System.out.printf("Coordinates: (%d, %d), Horizontal: %b%n", x, y, horizontal);
-
-                IShip ship = new Ship(type.getSize());
-                boolean success = currentPlayerBoard.placeShip(ship, x, y, horizontal);
-
-                if (success) {
-                    System.out.println("Ship placed successfully.");
-                    placed = true;
-                } else {
-                    System.out.println("Could not place ship at that location. Try again.");
-                }
-
-                // Show board
-                printPlayerView(currentPlayerBoard);
-            }
-        }
-    }
-
-
-    // this is previous game implementation:
+//    // TODO - GUI
+//    public void placeShipsOnBoard(int x, int y, boolean horizontal) {
+//        System.out.printf("%s, placing ships on the board.%n", currentPlayer.getPlayerName());
+//
+//        IBoard currentPlayerBoard = getCurrentPlayerBoard();
+//
+//        for (Ship_type type : Ship_type.values()) {
+//            boolean placed = false;
+//
+//            while (!placed) {
+//                System.out.printf("Placing %s (size %d).%n", type.name(), type.getSize());
+//                System.out.printf("Coordinates: (%d, %d), Horizontal: %b%n", x, y, horizontal);
+//
+//                IShip ship = new Ship(type.getSize());
+//                boolean success = currentPlayerBoard.placeShip(ship, x, y, horizontal);
+//
+//                if (success) {
+//                    System.out.println("Ship placed successfully.");
+//                    placed = true;
+//                } else {
+//                    System.out.println("Could not place ship at that location. Try again.");
+//                }
+//
+//                // Show board
+//                printPlayerView(currentPlayerBoard);
+//            }
+//        }
+//    }
+//
+//
+//     this is previous game implementation:
 //    public void startGameCLI() {
 //        for (Player_choice ignored : Player_choice.values()) {
 //            placeShipsOnBoard();
@@ -253,4 +286,57 @@ public class Game implements IGame {
 //        }
 //        getConsoleInputAndDoTurn();
 //    }
+
+
+    /**
+     * Prints the board as seen by the opponent.
+     */
+    public String getOpponentView(IBoard board) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Opponent board:\n");
+        for (int y = 0; y < heightOfTheBoard; y++) {
+            for (int x = 0; x < widthOfTheBoard; x++) {
+                Field field = board.getField(x,y);
+                if (!field.isRevealed()) {
+                    sb.append(". "); // unrevealed
+                } else if (field.getShip() != null && field.getShip().isSunk()) {
+                    sb.append("# "); // sunk
+                } else if (field.getShip() != null && field.isHit()) {
+                    sb.append("X "); // hit
+                } else {
+                    sb.append("O "); // miss
+                }
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Prints your own board.
+     */
+    public String getPlayerView(IBoard board) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Your board:\n");
+        for (int y = 0; y < heightOfTheBoard; y++) {
+            for (int x = 0; x < widthOfTheBoard; x++) {
+                Field field = board.getField(x, y);
+                if (field.getShip() != null) {
+                    if (field.isHit()) {
+                        sb.append("X "); // hit ship
+                    } else {
+                        sb.append("S "); // ship not hit
+                    }
+                } else {
+                    if (field.isRevealed()) {
+                        sb.append("O "); // revealed empty (miss)
+                    } else {
+                        sb.append(". "); // unrevealed empty
+                    }
+                }
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
 }

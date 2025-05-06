@@ -28,12 +28,10 @@ public class PlayerHandler implements Runnable {
 
     @Override
     public void run() {
-        // System.out.println("Handling player");
         try (
                 BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))
         ) {
-            System.out.println("Sending connection message to client...");
             sendMessage(writer, "CONNECTED as " + playerChoice.name());
             System.out.println("Connection established with player: " + playerChoice.name());
 
@@ -50,10 +48,40 @@ public class PlayerHandler implements Runnable {
 
                 switch (type) {
                     case "DO_TURN" -> {
+//                        if (!game.getCurrentPlayer().equals(playerChoice)) {
+//                            sendMessage(writer, "NOT_YOUR_TURN");
+//                            break;
+//                        }
+                        if(playerChoice == Player_choice.PLAYER_ONE) {
+                            game.setCurrentPlayer(Player_choice.PLAYER_ONE);
+                        }
+                        else {
+                            game.setCurrentPlayer(Player_choice.PLAYER_TWO);
+                        }
+
+                        System.out.println("Game:" + game.getCurrentPlayer());
+
                         int x = message.get("x").getAsInt();
                         int y = message.get("y").getAsInt();
                         boolean result = game.doTurn(x, y);
+
+                        IBoard board, opponentBoard;
+                        if (playerChoice == Player_choice.PLAYER_ONE) {
+                            board = game.getPlayer_1().getBoard();
+                            opponentBoard = game.getPlayer_2().getBoard();
+                        } else {
+                            board = game.getPlayer_2().getBoard();
+                            opponentBoard = game.getPlayer_1().getBoard();
+                        }
+                        game.printPlayerView(board);
+                        game.printOpponentView(opponentBoard);
+
+                        game.switchPlayer();
+                        System.out.println("Player " + game.getCurrentPlayer().name() + " turn.");
+
                         sendMessage(writer, "TURN_RESULT: " + result);
+
+                        // maybe notify the other player
                     }
                     case "PLACE_SHIP" -> {
                         int x = message.get("x").getAsInt();
@@ -63,32 +91,56 @@ public class PlayerHandler implements Runnable {
 
                         // System.out.println("Ship: " + x + " " + y + " " + horizontal + " " + size);
 
+                        IBoard board, opponentBoard;
+                        if (playerChoice == Player_choice.PLAYER_ONE) {
+                            board = game.getPlayer_1().getBoard();
+                            opponentBoard = game.getPlayer_2().getBoard();
+                        } else {
+                            board = game.getPlayer_2().getBoard();
+                            opponentBoard = game.getPlayer_1().getBoard();
+                        }
+
+                        IShip ship = new Ship(size);
+
+                        boolean success = board.placeShip(ship, x, y, horizontal);
+                        game.printPlayerView(board);
+                        game.printOpponentView(opponentBoard);
+                        sendMessage(writer, "PLACED: " + success);
+                    }
+                    case "PRINT_MY_BOARD" -> {
                         IBoard board;
                         if (playerChoice == Player_choice.PLAYER_ONE) {
                             board = game.getPlayer_1().getBoard();
                         } else {
                             board = game.getPlayer_2().getBoard();
                         }
-
-                        IShip ship = new Ship(size);
-
-                        // System.out.println("Board size: " + board.getHeight() + " " + board.getWidth());
-                        // System.out.println("Ship: " + ship.getSize());
-                        boolean success = board.placeShip(ship, x, y, horizontal);
-                        // System.out.println("Success: " + success);
-                        game.printPlayerView(board);
-                        game.printOpponentView(board);
-                        sendMessage(writer, "PLACED: " + success);
+                        sendMessage(writer, game.getPlayerView(board));
                     }
-                    case "PRINT_MY_BOARD" -> {
-                        IBoard board = (playerChoice == Player_choice.PLAYER_ONE)
-                                ? game.getPlayer_1().getBoard()
-                                : game.getPlayer_2().getBoard();
-                        sendMessage(writer, getBoardAsString(board));
+                    case "PRINT_OPPONENT_BOARD" -> {
+                        IBoard board;
+                        if (playerChoice == Player_choice.PLAYER_TWO) {
+                            board = game.getPlayer_1().getBoard();
+                        } else {
+                            board = game.getPlayer_2().getBoard();
+                        }
+                        sendMessage(writer, game.getOpponentView(board));
                     }
                     case "EXIT" -> {
                         sendMessage(writer, "GOODBYE");
                         running = false;
+                    }
+                    case "READY" -> {
+                        // this could be here not in game
+                        game.setPlayerReady(playerChoice);
+//                        sendMessage(writer, "WAITING FOR OPPONENT");
+//                        try {
+//                            game.waitForBothPlayersReady();
+//                            sendMessage(writer, "BOTH_READY");
+//                        } catch (InterruptedException e) {
+//                            Thread.currentThread().interrupt();
+//                            sendMessage(writer, "ERROR: Interrupted while waiting for opponent");
+//                            System.err.println("Interrupted while waiting for opponent");
+//                        }
                     }
                     default -> sendMessage(writer, "Unknown command: " + type);
                 }
@@ -110,22 +162,4 @@ public class PlayerHandler implements Runnable {
         writer.newLine();
         writer.flush();
     }
-
-    private String getBoardAsString(IBoard board) {
-        StringBuilder sb = new StringBuilder();
-        for (int y = 0; y < board.getHeight(); y++) {
-            for (int x = 0; x < board.getWidth(); x++) {
-                Field f = board.getField(x, y);
-                if (f.isRevealed()) {
-                    if (f.getShip() != null && f.isHit()) sb.append("X ");
-                    else sb.append("O ");
-                } else {
-                    sb.append(". ");
-                }
-            }
-            sb.append("\n");
-        }
-        return sb.toString();
-    }
-
 }
