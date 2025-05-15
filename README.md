@@ -1,12 +1,12 @@
-### Battleships
+# Battleships
 
 Project implementing battleships in Java with Swing used for graphics.
 
-# Current development
+## Current development
 - Graphical interface
 - Game mechanics
 
-# Future development
+## Future development
 - Online connection
 
 ### CI/CD with Auto DevOps
