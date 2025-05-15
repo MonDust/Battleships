@@ -1,0 +1,17 @@
+pg\edu\pl\entities\Player.class
+pg\edu\pl\communication\client.class
+pg\edu\pl\game_mechanics\Game.class
+pg\edu\pl\entities\Ship.class
+pg\edu\pl\entities\interfaces\IShip.class
+pg\edu\pl\utils\Player_choice.class
+pg\edu\pl\communication\server.class
+pg\edu\pl\utils\Ship_type.class
+pg\edu\pl\DemoApplication.class
+pg\edu\pl\Main.class
+pg\edu\pl\entities\Board.class
+pg\edu\pl\utils\Constants.class
+pg\edu\pl\entities\interfaces\IBoard.class
+pg\edu\pl\utils\ShotResult.class
+pg\edu\pl\entities\Field.class
+pg\edu\pl\entities\interfaces\IPlayer.class
+pg\edu\pl\game_mechanics\interfaces\IGame.class
