@@ -1,26 +1,43 @@
 package pg.edu.pl.game;
 
 import pg.edu.pl.entities.Player;
+import pg.edu.pl.game_mechanics.GUIs.CLIPrintingGame;
 import pg.edu.pl.game_mechanics.Game;
+import pg.edu.pl.game_mechanics.interfaces.IGame;
 import pg.edu.pl.player.PlayerHandler;
 import pg.edu.pl.utils.Player_choice;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+/**
+ * Game session class implementing session for two players.
+ */
 public class GameSession implements Runnable {
     private final Socket player1Socket;
     private final Socket player2Socket;
-    private final Game game;
+    private final IGame game;
     private boolean running = true;
 
+    private static final Logger logger = Logger.getLogger(GameSession.class.getName());
+
+    /**
+     * Constructor for the class
+     * @param player1Socket - socket of the first player
+     * @param player2Socket - socket of the second player
+     */
     public GameSession(Socket player1Socket, Socket player2Socket) {
         this.player1Socket = player1Socket;
         this.player2Socket = player2Socket;
         this.game = new Game();
-        game.printOpponentView(game.getPlayer_1().getBoard());
+
     }
 
+    /**
+     * Running the game session with two players.
+     */
     @Override
     public void run() {
         try {
@@ -37,14 +54,14 @@ public class GameSession implements Runnable {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error in game session: " + e.getMessage());
+            logger.log(Level.WARNING, "Error in game session: " + e.getMessage());
         } finally {
             stop();
         }
     }
 
     public void stop() {
-        System.out.println("Stopping game session...");
+        logger.log(Level.INFO,"Stopping game session...");
         running = false;
 
         try {
@@ -55,7 +72,7 @@ public class GameSession implements Runnable {
                 player2Socket.close();
             }
         } catch (IOException e) {
-            System.err.println("Error closing sockets in game session: " + e.getMessage());
+            logger.log(Level.WARNING,"Error closing sockets in game session: " + e.getMessage());
         }
     }
 }

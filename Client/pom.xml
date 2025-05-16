@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>pg.edu.pl</groupId>
-            <artifactId>Shared</artifactId>
+            <artifactId>Gameplay</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
