@@ -14,6 +14,8 @@ All the other connections get rejected.
 Project implementing battleships in Java with Swing used for graphics.
 
 ## Current state
+The gameplay of the Battleships is implemented, as is connection between players and the server.
+
 ### Client module
 Handles user interaction, board rendering in CLI, and communication with a server.
 ### Server module
@@ -22,6 +24,8 @@ Enforces game rules.
 
 ## Under development
 - Graphical Interface - currently only demo available in the shared module.
+- Issues with player readiness, and turn-based gameplay.
+- Testing for overlooked issues.
 
 ## How to use
 
@@ -58,4 +62,5 @@ Version 3, 19 November 2007
 
 ## Authors
 O. Paszkiewicz
+
 Aleksandra Susmarska
