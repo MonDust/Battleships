@@ -34,11 +34,9 @@ public class GameClient {
     private static final Logger logger = Logger.getLogger(GameClient.class.getName());
 
     /**
-     * Constructor for class.
+     * Constructor for the class.
      */
-    public GameClient() {
-
-    }
+    public GameClient() {}
 
     /**
      * Start the client, try to connect to the server.
@@ -71,6 +69,14 @@ public class GameClient {
         }
     }
 
+    /**
+     * Listen for messages sent from servers.
+     * And make action based on message.
+     * 1. CONNECTED
+     * 2. PLACED
+     * 3. BOTH_READY
+     * 4. TURN_READY
+     */
     private void listenForServerMessages() {
         new Thread(() -> {
             try {
@@ -83,7 +89,8 @@ public class GameClient {
                     } else if (response.contains("PLACED: ")) {
                         boolean placementSuccess = Boolean.parseBoolean(response.split(": ")[1].trim());
                         try {
-                            placementResults.put(placementSuccess); // ensures the result is handed off to the waiting thread
+                            // ensures the result is handed off to the waiting thread
+                            placementResults.put(placementSuccess);
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                             logger.log(Level.SEVERE, "Listener thread interrupted while putting placement result", e);
@@ -95,7 +102,7 @@ public class GameClient {
                     }
                 }
             } catch (IOException e) {
-                logger.log(Level.WARNING, "Non-critical IO issue", e);
+                logger.log(Level.WARNING, "!IO issue - server message", e);
             }
         }).start();
     }
@@ -110,10 +117,17 @@ public class GameClient {
             writer.newLine();
             writer.flush();
         } catch (IOException e) {
-            logger.log(Level.WARNING, "Non-critical IO issue - sendMessage", e);
+            logger.log(Level.WARNING, "!IO issue - sendMessage", e);
         }
     }
 
+    /**
+     * Message for placing ships.
+     * @param x x placement
+     * @param y y placement
+     * @param horizontal horizontal or vertical placement
+     * @param size size of the ship
+     */
     private void sendPlaceShip(int x, int y, boolean horizontal, int size) {
         JsonObject message = new JsonObject();
         message.addProperty("type", "PLACE_SHIP");
@@ -125,6 +139,11 @@ public class GameClient {
         sendMessage(message.toString());
     }
 
+    /**
+     * Message for doing a turn.
+     * @param x x placement
+     * @param y y placement
+     */
     private void sendDoTurn(int x, int y) {
         JsonObject message = new JsonObject();
         message.addProperty("type", "DO_TURN");
@@ -141,6 +160,10 @@ public class GameClient {
         sendMessage(message.toString());
     }
 
+    /**
+     * Message for printing opponent board.
+     * Basically what you have done to the opponent board (what is the current state available to you).
+     */
     private void sendPrintOpponentBoard() {
         JsonObject message = new JsonObject();
         message.addProperty("type", "PRINT_OPPONENT_BOARD");
@@ -150,6 +173,7 @@ public class GameClient {
 
     /**
      * exit - Stop the client.
+     * Close the reader, writer, socket.
      */
     public void exit() {
         JsonObject message = new JsonObject();
@@ -167,57 +191,96 @@ public class GameClient {
     }
 
     /**
-     * Placing ships.
+     * Choose the option for placing ships window.
+     * Option:
+     * 1 - Place the ship
+     * 2 - Exit
+     * @return the option
      */
-    public boolean placingShips() {
-        System.out.println("Placing ships on the board. ");
+    public int chooseOptionPlacingShips() {
+        boolean optionsChoice = true;
+        int option = 3;
+
+        while(optionsChoice) {
+            System.out.println("Options: ");
+            System.out.println("1. Place ship.");
+            System.out.println("2. Exit game.");
+            try {
+                option = scanner.nextInt();
+            } catch (InputMismatchException e) {
+                logger.log(Level.INFO, "Invalid option entered, try again.");
+                scanner.nextLine();
+                continue;
+            }
+            if (option == 2) {
+                exit();
+                return option;
+            } else if (option == 1) {
+                optionsChoice = false;
+            } else {
+                logger.log(Level.INFO,"Invalid option. Please try again.");
+            }
+        }
+        return option;
+    }
+
+    /**
+     * Get input from player about their ship placement.
+     * x, y and if the ship is horizontal or vertical
+     * @param shipType - type of the ship
+     * @throws InputMismatchException if player gives wrong input exception will be thrown
+     */
+    public void scanInputsAndSentShipPlacement(Ship_type shipType) throws InputMismatchException {
         int x, y;
         boolean horizontal;
 
-        for (Ship_type type : Ship_type.values()) {
+        try {
+            if (!scanner.hasNextInt()) throw new InputMismatchException("Expected integer for x");
+            x = scanner.nextInt();
 
+            if (!scanner.hasNextInt()) throw new InputMismatchException("Expected integer for y");
+            y = scanner.nextInt();
+
+            if (!scanner.hasNextBoolean()) throw new InputMismatchException("Expected boolean for horizontal");
+            horizontal = scanner.nextBoolean();
+        } catch (InputMismatchException e) {
+            scanner.nextLine();
+            throw e;
+        }
+
+        logger.log(Level.INFO, String.format("Placing ship (%s - size: %d) at x=%d y=%d horiz=%s", shipType.toString(), shipType.getSize(), x, y, horizontal));
+        sendPlaceShip(x, y, horizontal, shipType.getSize());
+    }
+
+    /**
+     * Placing ships function.
+     * Will get ship values from Ship_type enum, can be changed in Gameplay in utils.
+     */
+    public boolean placingShips() {
+        logger.log(Level.INFO,"Placing ships on the board. ");
+
+        for (Ship_type type : Ship_type.values()) {
             boolean placed = false;
             while (!placed) {
+                // showing the board to the player
                 sendPrintMyBoard();
 
-                boolean optionsChoice = true;
-                while(optionsChoice) {
-                    System.out.println("Options: ");
-                    System.out.println("1. Place ship.");
-                    System.out.println("2. Exit game.");
-                    int option = scanner.nextInt();
-                    if (option == 2) {
-                        exit();
-                        return false;
-                    } else if (option == 1) {
-                        optionsChoice = false;
-                    } else {
-                        System.out.println("Invalid option. Please try again.");
-                    }
-                }
+                // player can either choose to place ship or exit
+                if(chooseOptionPlacingShips() != 1) return false;
 
+                // placing ships
                 System.out.printf("Placing %s (size %d).%n", type.name(), type.getSize());
                 System.out.println("Enter ship details (x, y, horizontal(true/false)):");
                 try {
-                    if (!scanner.hasNextInt()) throw new InputMismatchException("Expected integer for x");
-                    x = scanner.nextInt();
-
-                    if (!scanner.hasNextInt()) throw new InputMismatchException("Expected integer for y");
-                    y = scanner.nextInt();
-
-                    if (!scanner.hasNextBoolean()) throw new InputMismatchException("Expected boolean for horizontal");
-                    horizontal = scanner.nextBoolean();
-
-                    sendPlaceShip(x, y, horizontal, type.getSize());
-
+                    scanInputsAndSentShipPlacement(type);
                     try {
                         Boolean result = placementResults.take();
                         if (result) {
                             placed = true;
-                            System.out.println(type.name() + " placed successfully.");
+                            logger.log(Level.INFO, type.name() + " placed successfully.");
                         } else {
-                            System.out.println("Ship could not be placed. Try again.");
-                            logger.info(String.format("Placement failed for %s at x=%d y=%d horiz=%s", type.name(), x, y, horizontal));
+                            logger.log(Level.INFO, "Ship could not be placed. Try again.");
+                            logger.log(Level.INFO, String.format("Placement failed for %s", type.name()));
                         }
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -225,8 +288,8 @@ public class GameClient {
                     }
 
                 } catch (InputMismatchException e) {
-                    System.out.println("Invalid input format. Please try again.");
-                    logger.warning("Invalid input type from user: " + e.getMessage());
+                    logger.log(Level.INFO, "Invalid input format. Please try again.");
+                    logger.log(Level.WARNING, "Invalid input type from user: " + e.getMessage());
                     // clear input
                     scanner.nextLine();
                 }
@@ -235,26 +298,19 @@ public class GameClient {
         return true;
     }
 
-    // players do turn at the same time
-    // TODO - fix that
-
     /**
      * Actual gameplay after the session started.
      */
     public void gamePlay() {
         scanner = new Scanner(System.in);
-        logger.info("Welcome to Battleships! \nGame session started.");
+        logger.log(Level.INFO,"Welcome to Battleships! \nGame session started.");
 
         boolean isGameRunning = placingShips();
+        JsonObject message = new JsonObject();
         if(isGameRunning) {
-            JsonObject message = new JsonObject();
             message.addProperty("type", "READY");
             sendMessage(message.toString());
             isOpponentReady = true;
-        } else {
-            JsonObject message = new JsonObject();
-            message.addProperty("type", "EXIT");
-            sendMessage(message.toString());
         }
         while (isGameRunning) {
             if(true) {
@@ -281,7 +337,7 @@ public class GameClient {
                             sendDoTurn(x, y);
                             //isTurn = false;
                         } catch (InputMismatchException e) {
-                            System.out.println("Invalid input format. Please try again.");
+                            logger.log(Level.INFO, "Invalid input format. Please try again.");
                             logger.warning("Invalid input type from user: " + e.getMessage());
                             // clear input
                             scanner.nextLine();
@@ -290,17 +346,15 @@ public class GameClient {
                     case 2:
                         exit();
                         isGameRunning = false;
-                        JsonObject message = new JsonObject();
+                        message = new JsonObject();
                         message.addProperty("type", "EXIT");
                         sendMessage(message.toString());
                         break;
                     default:
-                        System.out.println("Invalid choice.");
+                        logger.log(Level.INFO,"Invalid choice.");
                         isTurn = true;
                 }
             }
         }
     }
-
-
 }

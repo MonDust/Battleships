@@ -1,12 +1,22 @@
 package pg.edu.pl.game;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+/**
+ * The handler of all the games (sessions).
+ */
 public class GameHandler  implements Runnable {
+
+    // TODO - check if the waiting player queue works correctly
+
     private final BlockingQueue<Socket> waitingPlayers = new LinkedBlockingQueue<>();
     /**
      * List of active game sessions.
@@ -14,16 +24,25 @@ public class GameHandler  implements Runnable {
     private final List<GameSession> activeSessions = new CopyOnWriteArrayList<>();
     private boolean running = true;
 
+    private static final Logger logger = Logger.getLogger(GameHandler.class.getName());
+
+    /**
+     * Add player to the queue.
+     * @param socket the socket of the player.
+     */
     public void addPlayer(Socket socket) {
-        System.out.println("Adding player: " + socket);
+        logger.log(Level.INFO,"Adding player: " + socket);
         boolean added = waitingPlayers.offer(socket);
-        System.out.println("Waiting player added: " + added);
+        logger.log(Level.INFO,"Waiting player added: " + added);
         if (!added) {
-            System.err.println("Failed to add player to the waiting queue. Queue might be full.");
-            // reject the player
+            logger.log(Level.WARNING, "Failed to add player to the waiting queue. Queue might be full.");
+            // TODO - reject the player
         }
     }
 
+    /**
+     * Running the game handler.
+     */
     @Override
     public void run() {
         while(running) {
@@ -31,7 +50,7 @@ public class GameHandler  implements Runnable {
                 Socket player1 = waitingPlayers.take();
                 Socket player2 = waitingPlayers.take();
 
-                System.out.println("Starting new game with two players...");
+                logger.log(Level.INFO,"Starting new game with two players...");
 
                 // Start a new game session
                 GameSession session = new GameSession(player1, player2);
@@ -39,7 +58,7 @@ public class GameHandler  implements Runnable {
 
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                System.err.println("GameHandler interrupted");
+                logger.log(Level.WARNING,"GameHandler interrupted");
                 break;
             }
         }
@@ -49,20 +68,22 @@ public class GameHandler  implements Runnable {
      * Close client connections.
      */
     public void stop() {
-        System.out.println("Stopping the game handler...");
+        logger.log(Level.INFO,"Stopping the game handler...");
         running = false;
         stopSessions();
     }
 
+    /**
+     * Close all the sessions.
+     */
     private void stopSessions() {
-        System.out.println("Stopping all active game sessions...");
-
+        logger.log(Level.INFO,"Stopping all active game sessions...");
         // Iterate through all active game sessions and stop them
         for (GameSession session : activeSessions) {
             session.stop();
         }
-
         activeSessions.clear();
+        // TODO - inform all the clients - also without sessions ?
     }
 
 }
