@@ -31,8 +31,8 @@ Enforces game rules.
 
 ### Clone the Repository
 ```
-git clone ___
-cd ___
+git clone https://github.com/MonDust/Battleships.git
+cd Battleships.git
 ```
 
 ### Configuration
